@@ -58,7 +58,7 @@ app.get('/addCategory', (req, res) => {
   }
   try {
     const data = jwt.verify(token, SECRET_JWT_KEY)
-    console.log(data)
+    console.log(data, true)
     res.send('Adding Category...')
   } catch (error) {
     return res.status(401).send('Acess not authorized')
