@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 import { PORT } from './config.js'
 import authRoutes from './routes/auth.js'
 import categoryRoutes from './routes/category.js'
+import taskRoutes from './routes/task.js'
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes)
 app.use('/category', categoryRoutes)
+app.use('/task', taskRoutes)
 
 app.listen(PORT, () => {
   dbconnect()

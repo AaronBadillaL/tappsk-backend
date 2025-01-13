@@ -7,8 +7,12 @@ const router = express.Router()
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body
+  if (!username || !password) {
+    return res.status(400).send({ error: 'Username and password are required' });
+  }
   try {
     const user = await UserRepository.login({ username, password })
+    // console.log(user.doc._id, user.doc.username)
     const token = jwt.sign(
       { user: user._id, username: user.username },
       SECRET_JWT_KEY,
