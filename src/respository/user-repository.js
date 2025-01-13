@@ -27,12 +27,12 @@ export class UserRepository {
     Validation.password(password)
 
     const user = await User.findOne({ username })
-    if (!user) throw new Error('username does not exist')
+    if (!user) throw new Error('Invalid credentials')
 
     const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid) throw new Error('username does not exist')
-
-    const { password: _, ...publicUser } = user
+    if (!isValid) throw new Error('Invalid credentials')
+    const userObj = user.toObject()
+    const { password: _, ...publicUser } = userObj
 
     return publicUser
   }
