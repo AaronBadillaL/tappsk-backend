@@ -1,10 +1,12 @@
 import express from 'express'
 import TaskRepository from '../../src/respository/task-repository.js'
-
+import jwt from 'jsonwebtoken'
+import { SECRET_JWT_KEY } from '../config.js'
 const router = express.Router()
 
 router.post('/addTask', async (req, res) => {
   const token = req.cookies.acces_token
+  console.log(token)
   if (!token) {
     console.log('Token:', token)
     return res.status(403).send('Acess not authorized')
@@ -19,7 +21,6 @@ router.post('/addTask', async (req, res) => {
     const task = await TaskRepository.create({ taskName, taskDescription, taskDueDate, taskPriority, taskStatus, taskCategory, userId })
     res.send(task)
   } catch (error) {
-
     console.log(error)
     return res.status(401).send('Sorry')
   }
@@ -33,8 +34,7 @@ router.get('/getAllTask', async (req, res) => {
   }
   const { userId } = req.body
   try {
-    const tasks = await TaskRepository.getAll({userId})
-    
+    const tasks = await TaskRepository.getAll({ userId })
     res.send(tasks)
   } catch (error) {
     console.log(error)
@@ -51,7 +51,7 @@ router.get('/getByIdTask', async (req, res) => {
 
   try {
     const { taskName, userId } = req.body
-    const task = await TaskRepository.getById({taskName, userId})
+    const task = await TaskRepository.getById({ taskName, userId })
     console.log(task)
     res.send(task)
   } catch (error) {
@@ -59,6 +59,5 @@ router.get('/getByIdTask', async (req, res) => {
     return res.status(401).send('Sorry, Access not authorized')
   }
 })
-
 
 export default router

@@ -1,6 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
-// import cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser'
 import { PORT } from './config.js'
 import authRoutes from './routes/auth.js'
 import categoryRoutes from './routes/category.js'
@@ -9,7 +9,7 @@ import taskRoutes from './routes/task.js'
 const app = express()
 
 app.use(express.json())
-// app.use(cookieParser())
+app.use(cookieParser())
 
 app.get('/', (req, res) => {
   res.send('<h1> Hello </h1>')
