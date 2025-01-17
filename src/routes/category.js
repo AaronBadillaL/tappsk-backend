@@ -13,15 +13,14 @@ router.post('/addCategory', async (req, res) => {
   }
   try {
     const decoded = jwt.verify(token, SECRET_JWT_KEY) // Reemplaza con tu clave secreta
-    console.log('Token decodificado:', decoded)// { iat: 1733674949, exp: 1733678549 }
+    console.log('Token decodificado:', decoded)
     const { user } = decoded
-    console.log(user)// undefined
+    console.log(user)
 
-    const { categoryName, userId } = req.body
-    const category = await CategoryRepository.create({ categoryName, userId })
+    const { categoryName } = req.body
+    const category = await CategoryRepository.create({ categoryName, user })
     res.send(category)
   } catch (error) {
-
     console.log(error)
     return res.status(401).send('Sorry')
   }
@@ -50,7 +49,6 @@ router.get('/getAllCategory', async (req, res) => {
   }
 })
 
-
 router.get('/getByIdCategory', async (req, res) => {
   const token = req.cookies.acccess_token
   console.log(token)
@@ -60,7 +58,7 @@ router.get('/getByIdCategory', async (req, res) => {
 
   try {
     const { categoryName, userId } = req.body
-    const category = await CategoryRepository.getById({categoryName, userId})
+    const category = await CategoryRepository.getById({ categoryName, userId })
     console.log(category)
     res.send(category)
   } catch (error) {
@@ -84,6 +82,5 @@ router.put('/updateCategory', async (req, res) => {
     return res.status(401).send('Sorry, Access not authorized')
   }
 })
-
 
 export default router
