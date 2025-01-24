@@ -19,7 +19,6 @@ router.post('/login', async (req, res) => {
       {
         expiresIn: '1h'
       })
-    console.log(token)
     res
       .cookie('acces_token', token, {
         httpOnly: true,

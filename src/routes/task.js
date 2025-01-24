@@ -6,19 +6,22 @@ const router = express.Router()
 
 router.post('/addTask', async (req, res) => {
   const token = req.cookies.acces_token
-  console.log(token)
+
   if (!token) {
-    console.log('Token:', token)
-    return res.status(403).send('Acess not authorized')
+    return res.status(403).send('Access not authorized')
   }
   try {
-    const decoded = jwt.verify(token, SECRET_JWT_KEY) // Reemplaza con tu clave secreta
-    console.log('Token decodificado:', decoded)// { iat: 1733674949, exp: 1733678549 }
-    const { user } = decoded
-    console.log(user)// undefined
+    const decoded = jwt.verify(token, SECRET_JWT_KEY)
 
-    const { taskName, taskDescription, taskDueDate, taskPriority, taskStatus, taskCategory, userId } = req.body
-    const task = await TaskRepository.create({ taskName, taskDescription, taskDueDate, taskPriority, taskStatus, taskCategory, userId })
+    const currentTimestamp = Math.floor(Date.now() / 1000)
+    if (decoded.exp < currentTimestamp) {
+      console.log('El token ha expirado')
+      return res.status(401).send('Access not authorized')
+    }
+    const { user } = decoded
+
+    const { taskName, taskDueDate, taskPriority, taskStatus, taskCategory } = req.body
+    const task = await TaskRepository.create({ taskName, taskDueDate, taskPriority, taskStatus, taskCategory, user })
     res.send(task)
   } catch (error) {
     console.log(error)
@@ -52,6 +55,31 @@ router.get('/getByIdTask', async (req, res) => {
   try {
     const { taskName, userId } = req.body
     const task = await TaskRepository.getById({ taskName, userId })
+    console.log(task)
+    res.send(task)
+  } catch (error) {
+    console.log(error)
+    return res.status(401).send('Sorry, Access not authorized')
+  }
+})
+
+router.patch('/updateTask', async (req, res) => {
+  const token = req.cookies.acccess_token
+  console.log(token)
+  if (!token) {
+    return res.status(403).send('Access not authorized')
+  }
+  const decoded = jwt.verify(token, SECRET_JWT_KEY)
+
+  const currentTimestamp = Math.floor(Date.now() / 1000)
+  if (decoded.exp < currentTimestamp) {
+    console.log('El token ha expirado')
+    return res.status(401).send('Access not authorized')
+  }
+  const { user } = decoded
+  try {
+    const { taskName, taskDueDate, taskPriority, taskStatus, taskCategory } = req.body
+    const task = await TaskRepository.update({ taskName, taskDueDate, taskPriority, taskStatus, taskCategory, user })
     console.log(task)
     res.send(task)
   } catch (error) {

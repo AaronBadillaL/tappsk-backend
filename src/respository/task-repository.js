@@ -1,19 +1,20 @@
-
 import Task from '../../src/models/task.js'
+import Category from '../models/category.js'
 
 export class TaskRepository {
-  static async create({ taskName, taskDescription, taskDueDate, taskPriority, taskStatus, taskCategory, userId }) {
+  static async create ({ taskName, taskDueDate, taskPriority, taskStatus, taskCategory, user }) {
     try {
-      const task = await Task.findOne({ task_name: taskName, user_id: userId })
+      const task = await Task.findOne({ title: taskName, userId: user })
       if (task) throw new Error('Task already exist')
+      const category = await Category.findOne({ category_name: taskCategory, user_id: user })
+      if (!category) throw new Error('Category does not exist')
       const newTask = new Task({
-        task_name: taskName,
-        task_description: taskDescription,
-        task_due_date: taskDueDate,
-        task_priority: taskPriority,
-        task_status: taskStatus,
-        task_category: taskCategory,
-        user_id: userId
+        userId: user,
+        dueDate: taskDueDate,
+        title: taskName,
+        category: category._id,
+        priority: taskPriority,
+        status: taskStatus
       })
       await newTask.save()
 
@@ -24,41 +25,57 @@ export class TaskRepository {
     }
   }
 
-  static async getAll({ userId }) {
+  static async getAll ({ user }) {
     try {
-      const tasks = await Task.find({ user_id: userId })
+      const tasks = await Task.find({ userId: user })
       return tasks
     } catch (error) {
       throw new Error(error)
     }
   }
 
-  static async update({ taskName, taskDescription, taskDueDate, taskPriority, taskStatus, taskCategory, userId }) {
+  static async update ({ taskName, taskDueDate, taskPriority, taskStatus, taskCategory, user }) {
     try {
-      if (!taskName || !userId) {
-        throw new Error('taskName and userId are required');
+      if (!taskName || !user) {
+        throw new Error('taskName and userId are required')
       }
 
-      const task = await Task.findOne({ task_name: taskName, user_id: userId });
+      const task = await Task.findOne({ title: taskName, userId: user })
 
-      if (!task) throw new Error(`Task not found for userId: ${userId} and taskName: ${taskName}`);
+      if (!task) throw new Error(`Task not found for userId: ${user} and taskName: ${taskName}`)
 
-      if (taskDescription !== undefined) task.description = taskDescription;
-      if (taskDueDate !== undefined) task.due_date = taskDueDate;
-      if (taskPriority !== undefined) task.priority = taskPriority;
-      if (taskStatus !== undefined) task.status = taskStatus;
-      if (taskCategory !== undefined) task.category = taskCategory;
+      // dueDate: { type: Date, required: true },
+      // title: { type: String, required: true },
+      // category: { type: String, required: true },
+      // priority: { type: Number, required: true },
+      // status: { type: String, required: true }
 
-      await task.save();
+      if (taskDueDate !== undefined) {
+        if (isNaN(new Date(taskDueDate).getTime())) {
+          throw new Error('Invalid dueDate format')
+        }
+        task.dueDate = taskDueDate
+      }
 
-      return task;
+      if (taskPriority !== undefined) {
+        if (typeof taskPriority !== 'number' || taskPriority < 0) {
+          throw new Error('Invalid priority value')
+        }
+        task.priority = taskPriority
+      }
+      if (taskStatus !== undefined) task.status = taskStatus
+      if (taskCategory !== undefined) task.category = taskCategory
+
+      await task.save()
+
+      return task
     } catch (error) {
-      console.error('Error in update:', error.message);
-      throw error;
+      console.error('Error in update:', error.message)
+      throw error
     }
   }
 
-  static async getById({ taskName, userId }) {
+  static async getById ({ taskName, userId }) {
     try {
       console.log({ taskName, userId })
       const task = await Task.findOne({ task_name: taskName, user_id: userId })
@@ -71,4 +88,4 @@ export class TaskRepository {
   }
 }
 
-export default TaskRepository;
+export default TaskRepository

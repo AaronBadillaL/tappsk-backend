@@ -10,7 +10,7 @@ const categorySchema = new Schema({
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
   is_active: { type: Boolean, default: true }
-},  
+},
 {
   collection: 'categories'// Fuerza el uso de esta colección
 })
