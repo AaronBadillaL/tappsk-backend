@@ -30,14 +30,15 @@ router.post('/addTask', async (req, res) => {
 })
 
 router.get('/getAllTask', async (req, res) => {
-  const token = req.cookies.acccess_token
-  console.log(token)
+  const token = req.cookies.acces_token
   if (!token) {
     return res.status(403).send('Access not authorized')
   }
-  const { userId } = req.body
+  const decoded = jwt.verify(token, SECRET_JWT_KEY)
+  const { user } = decoded
+
   try {
-    const tasks = await TaskRepository.getAll({ userId })
+    const tasks = await TaskRepository.getAll({ user })
     res.send(tasks)
   } catch (error) {
     console.log(error)
@@ -46,16 +47,22 @@ router.get('/getAllTask', async (req, res) => {
 })
 
 router.get('/getByIdTask', async (req, res) => {
-  const token = req.cookies.acccess_token
-  console.log(token)
+  const token = req.cookies.acces_token
   if (!token) {
     return res.status(403).send('Access not authorized')
   }
-
   try {
-    const { taskName, userId } = req.body
-    const task = await TaskRepository.getById({ taskName, userId })
-    console.log(task)
+    const decoded = jwt.verify(token, SECRET_JWT_KEY)
+
+    const currentTimestamp = Math.floor(Date.now() / 1000)
+    if (decoded.exp < currentTimestamp) {
+      console.log('El token ha expirado')
+      return res.status(401).send('Access not authorized')
+    }
+    const { user } = decoded
+
+    const { taskName } = req.body
+    const task = await TaskRepository.getById({ taskName, user })
     res.send(task)
   } catch (error) {
     console.log(error)
@@ -64,8 +71,7 @@ router.get('/getByIdTask', async (req, res) => {
 })
 
 router.patch('/updateTask', async (req, res) => {
-  const token = req.cookies.acccess_token
-  console.log(token)
+  const token = req.cookies.acces_token
   if (!token) {
     return res.status(403).send('Access not authorized')
   }

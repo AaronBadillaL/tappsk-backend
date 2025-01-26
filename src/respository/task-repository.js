@@ -12,7 +12,7 @@ export class TaskRepository {
         userId: user,
         dueDate: taskDueDate,
         title: taskName,
-        category: category._id,
+        category: taskCategory,
         priority: taskPriority,
         status: taskStatus
       })
@@ -64,7 +64,11 @@ export class TaskRepository {
         task.priority = taskPriority
       }
       if (taskStatus !== undefined) task.status = taskStatus
-      if (taskCategory !== undefined) task.category = taskCategory
+      if (taskCategory !== undefined) {
+        const category = await Category.findOne({ category_name: taskCategory, user_id: user })
+        if (!category) throw new Error('Category does not exist')
+        task.category = taskCategory
+      }
 
       await task.save()
 
@@ -75,11 +79,9 @@ export class TaskRepository {
     }
   }
 
-  static async getById ({ taskName, userId }) {
+  static async getById ({ taskName, user }) {
     try {
-      console.log({ taskName, userId })
-      const task = await Task.findOne({ task_name: taskName, user_id: userId })
-      console.log(task)
+      const task = await Task.findOne({ title: taskName, userId: user })
       if (!task) throw new Error('Task not found')
       return task
     } catch (error) {
